@@ -1,0 +1,8 @@
+spotify_cookies.json
+oauth.json
+browser.json
+spotapi_debug/
+unmatched_tracks.csv
+__pycache__/
+*.pyc
+/.claude

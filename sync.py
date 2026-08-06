@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 """Spotify <-> YouTube Music playlist converter.
 
 Usage:
@@ -32,7 +33,7 @@ def main() -> None:
     sp = sp_client.get_client() if "spotify" in (source, destination) else None
     yt = yt_client.get_client() if "ytmusic" in (source, destination) else None
 
-    print(f"Reading source playlist from {source}...")
+    print(f"Reading source playlist from {source}")
     if source == "spotify":
         playlist_id = sp_client.extract_playlist_id(args.playlist)
         playlist_name = sp_client.get_playlist_name(sp, playlist_id)
@@ -85,9 +86,9 @@ def main() -> None:
         return
 
     new_name = args.name or playlist_name
-    description = f"Converted from {source} playlist '{playlist_name}' via spotify-ytmusic-sync."
+    description = f"Converted from {source} playlist '{playlist_name}' via github.com/vzchel/spotify-yt-playlist-sync."
 
-    print(f"Creating '{new_name}' on {destination}...")
+    print(f"Creating '{new_name}' on {destination}")
     if destination == "ytmusic":
         new_playlist_id = yt_client.create_playlist(yt, new_name, description)
         yt_client.add_tracks(yt, new_playlist_id, matched_ids)

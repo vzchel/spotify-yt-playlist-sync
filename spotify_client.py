@@ -14,7 +14,7 @@ from spotapi.http.request import TLSClient
 
 from matcher import Candidate, Track
 
-COOKIE_FILE = "spotify_cookies.json"
+COOKIE_FILE = "./auth/spotify_cookies.json"
 DEBUG_DIR = "spotapi_debug"
 
 

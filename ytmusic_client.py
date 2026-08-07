@@ -29,7 +29,7 @@ def extract_playlist_id(playlist_ref: str) -> str:
     match = re.search(r"[?&]list=([a-zA-Z0-9_-]+)", playlist_ref)
     if match:
         return match.group(1)
-    return playlist_ref.strip()
+    return playlist_ref.strip() # assumes user used ID instead
 
 
 def get_playlist_name(yt: YTMusic, playlist_id: str) -> str:
@@ -60,7 +60,7 @@ def search_track(yt: YTMusic, track: Track) -> list[Candidate]:
     candidates: list[Candidate] = []
     # filter="songs" restricts results to audio-only catalog tracks, excluding music videos.
     try:
-        results = yt.search(query, filter="songs", limit=10, ignore_spelling=True)
+        results = yt.search(query, filter="songs", limit=3, ignore_spelling=True)
     except Exception:
         results = []
     for r in results:

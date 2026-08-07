@@ -153,7 +153,7 @@ def search_track(client: SpotifyClient, track: Track) -> list[Candidate]:
     song = Song(client=client.login.client)
     query = f"{track.artists[0]} {track.title}"
     try:
-        results = song.query_songs(query, limit=10)
+        results = song.query_songs(query, limit=3)
     except Exception:
         return []
     _dump_debug(f"search_{query}", results)

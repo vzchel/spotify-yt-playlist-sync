@@ -27,7 +27,7 @@ _NOISE_PATTERNS = [
     r"-\s*radio edit$",
 ]
 
-MATCH_THRESHOLD = 0.60
+MATCH_THRESHOLD = 0.50
 
 _NON_ORIGINAL_PATTERNS = [
     r"\bremaster(ed)?\b",

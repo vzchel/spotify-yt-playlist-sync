@@ -12,7 +12,7 @@ from typing import Any
 from spotapi import Config, Login, Logger, PrivatePlaylist, PublicPlaylist, Song
 from spotapi.http.request import TLSClient
 
-from matcher import Candidate, Track
+from matcher import Candidate, Track, is_original
 
 COOKIE_FILE = "./auth/spotify_cookies.json"
 DEBUG_DIR = "spotapi_debug"
@@ -96,6 +96,7 @@ def _parse_track_data(data: dict) -> Candidate | None:
         explicit=explicit,
         is_video=False,
         raw=data,
+        og=is_original(name),
     )
 
 
@@ -144,6 +145,7 @@ def read_playlist_tracks(client: SpotifyClient, playlist_id: str) -> list[Track]
                     duration_ms=candidate.duration_ms,
                     explicit=candidate.explicit,
                     source_id=candidate.id,
+                    og=candidate.og,
                 )
             )
     return tracks

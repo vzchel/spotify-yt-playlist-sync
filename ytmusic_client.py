@@ -8,7 +8,7 @@ import time
 from ytmusicapi import YTMusic
 from ytmusicapi.exceptions import YTMusicServerError
 
-from matcher import Candidate, Track
+from matcher import Candidate, Track, is_original
 
 OAUTH_FILE = "./auth/oauth.json"
 BROWSER_FILE = "./auth/browser.json"
@@ -50,6 +50,7 @@ def read_playlist_tracks(yt: YTMusic, playlist_id: str) -> list[Track]:
                 duration_ms=duration_seconds * 1000 if duration_seconds else None,
                 explicit=item.get("isExplicit", False),
                 source_id=item["videoId"],
+                og=is_original(item["title"]),
             )
         )
     return tracks
@@ -76,6 +77,7 @@ def search_track(yt: YTMusic, track: Track) -> list[Candidate]:
                 explicit=r.get("isExplicit", False),
                 is_video=(r.get("resultType") == "video"),
                 raw=r,
+                og=is_original(r.get("title", "")),
             )
         )
     return candidates

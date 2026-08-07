@@ -29,6 +29,29 @@ _NOISE_PATTERNS = [
 
 MATCH_THRESHOLD = 0.60
 
+_NON_ORIGINAL_PATTERNS = [
+    r"\bremaster(ed)?\b",
+    r"\blive\b",
+    r"\bradio edit\b",
+    r"\bacoustic\b",
+    r"\bdemo\b",
+    r"\binstrumental\b",
+    r"\bkaraoke\b",
+    r"\bcover\b",
+    r"\bremix\b",
+    r"\bmono\b",
+    r"\bstereo\b",
+    r"\bsped up\b",
+    r"\bslowed\b",
+]
+
+
+def is_original(title: str) -> bool:
+    """True if the title has no markers of a remaster, live recording, radio edit,
+    or other non-original version."""
+    t = title.lower()
+    return not any(re.search(p, t) for p in _NON_ORIGINAL_PATTERNS)
+
 
 def normalize(text: str) -> str:
     t = text.lower().strip()
@@ -46,6 +69,7 @@ class Track:
     duration_ms: Optional[int] = None
     explicit: bool = False
     source_id: Optional[str] = None
+    og: bool = False
 
 
 @dataclass
@@ -57,6 +81,7 @@ class Candidate:
     explicit: bool = False
     is_video: bool = False  # True when the result is a music video, not an audio-only track
     raw: dict = field(default_factory=dict)
+    og: bool = False
 
 
 def score_candidate(track: Track, candidate: Candidate) -> float:
@@ -88,6 +113,11 @@ def score_candidate(track: Track, candidate: Candidate) -> float:
         score += 0.04  # explicit versions are preferred when available
     elif track.explicit:
         score -= 0.02  # source was explicit but this candidate isn't
+
+    if candidate.og and track.og:
+        score += 0.03
+    elif track.og:
+        score -= 0.03
 
     return score
 

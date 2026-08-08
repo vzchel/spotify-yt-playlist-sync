@@ -83,7 +83,29 @@ Other flags:
 
 Playlist URLs or bare IDs both work for `--playlist`.
 
-## How matching works (`matcher.py`)
+## How it works
+
+```
+Spotify track
+    ↓
+Exact artist + title search
+    ↓
+No result?
+    ↓
+Normalized title + primary artist
+    ↓
+No result?
+    ↓
+Remove feat./with/remix metadata and retry
+    ↓
+No result?
+    ↓
+Search title + all artists
+    ↓
+Score candidates
+    ↓
+Accept only if score ≥ threshold
+```
 
 For each source track, the destination service is searched and every candidate is scored:
 

@@ -57,11 +57,14 @@ def read_playlist_tracks(yt: YTMusic, playlist_id: str) -> list[Track]:
 
 
 def search_track(yt: YTMusic, track: Track) -> list[Candidate]:
-    query = f"{track.artists[0]} {track.title}"
+    return search_query(yt, f"{track.artists[0]} {track.title}")
+
+
+def search_query(yt: YTMusic, query: str) -> list[Candidate]:
     candidates: list[Candidate] = []
     # filter="songs" restricts results to audio-only catalog tracks, excluding music videos.
     try:
-        results = yt.search(query, filter="songs", limit=3, ignore_spelling=True)
+        results = yt.search(query, filter="songs", limit=5, ignore_spelling=True)
     except Exception:
         results = []
     for r in results:

@@ -9,11 +9,16 @@ Usage:
 
 import argparse
 import csv
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import Optional
 
+import matcher
 import spotify_client as sp_client
 import ytmusic_client as yt_client
-from matcher import Track, best_match
+from matcher import Candidate, Track
+
+SEARCH_WORKERS = 8
 
 
 def parse_args() -> argparse.Namespace:
@@ -51,19 +56,24 @@ def main() -> None:
     matched_ids: list[str] = []
     unmatched: list[Track] = []
 
-    for i, track in enumerate(tracks, 1):
-        label = f"{', '.join(track.artists)} - {track.title}"
-        candidates = yt_client.search_track(yt, track) if destination == "ytmusic" else sp_client.search_track(sp, track)
-        match = best_match(track, candidates)
+    def match_track(track: Track) -> Optional[Candidate]:
+        if destination == "ytmusic":
+            return matcher.find_match(track, lambda q: yt_client.search_query(yt, q))
+        return matcher.find_match(track, lambda q: sp_client.search_query(sp, q))
 
-        if match:
-            matched_ids.append(match.id)
-            tag = " [video]" if match.is_video else ""
-            exp = " [explicit]" if match.explicit else ""
-            print(f"  [{i}/{len(tracks)}] OK   {label}  ->  {', '.join(match.artists)} - {match.title}{exp}{tag}")
-        else:
-            unmatched.append(track)
-            print(f"  [{i}/{len(tracks)}] MISS {label}")
+    # Searches are network-bound and independent, so run them concurrently;
+    # pool.map yields results in playlist order.
+    with ThreadPoolExecutor(max_workers=SEARCH_WORKERS) as pool:
+        for i, (track, match) in enumerate(zip(tracks, pool.map(match_track, tracks)), 1):
+            label = f"{', '.join(track.artists)} - {track.title}"
+            if match:
+                matched_ids.append(match.id)
+                tag = " [video]" if match.is_video else ""
+                exp = " [explicit]" if match.explicit else ""
+                print(f"  [{i}/{len(tracks)}] OK   {label}  ->  {', '.join(match.artists)} - {match.title}{exp}{tag}")
+            else:
+                unmatched.append(track)
+                print(f"  [{i}/{len(tracks)}] MISS {label}")
 
     print()
     print(f"Matched {len(matched_ids)}/{len(tracks)} tracks.")

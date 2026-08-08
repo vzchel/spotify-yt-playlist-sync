@@ -27,7 +27,8 @@ _NOISE_PATTERNS = [
     r"-\s*radio edit$",
 ]
 
-MATCH_THRESHOLD = 0.50
+MATCH_THRESHOLD = 0.55
+REQUIRED_FIELD_THRESHOLD = 0.80
 
 _NON_ORIGINAL_PATTERNS = [
     r"\bremaster(ed)?\b",
@@ -84,6 +85,57 @@ class Candidate:
     og: bool = False
 
 
+_FEAT_IN_TITLE = re.compile(
+    r"[(\[](?:feat\.?|ft\.?|with)\s+([^)\]]*)[)\]]|\b(?:feat\.?|ft\.?)\s+(.+)$",
+    re.IGNORECASE,
+)
+
+
+def _basic_norm(text: str) -> str:
+    """Lowercase and strip punctuation without removing feat/with credits,
+    so featured-artist names survive for artist matching."""
+    t = re.sub(r"[^\w\s]", " ", text.lower())
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def _featured_artists(title: str) -> list[str]:
+    names: list[str] = []
+    for m in _FEAT_IN_TITLE.finditer(title):
+        chunk = next((g for g in m.groups() if g), "")
+        names.extend(re.split(r",|&|\band\b|\bx\b", chunk, flags=re.IGNORECASE))
+    return [n.strip() for n in names if n.strip()]
+
+
+def has_title_and_artists(track: Track, candidate: Candidate) -> bool:
+    """Hard requirement: the candidate must carry the track's title and credit
+    every artist on it — the main artist and all features. This keeps a feat.
+    version from matching the solo original. Anything else is an automatic miss."""
+    title_ok = (
+        fuzz.partial_ratio(normalize(track.title), normalize(candidate.title)) / 100
+        >= REQUIRED_FIELD_THRESHOLD
+    )
+    if not title_ok:
+        return False
+
+    required = list(track.artists) + _featured_artists(track.title)
+    required_norm: list[str] = []
+    for name in required:
+        n = _basic_norm(name)
+        if n and n not in required_norm:
+            required_norm.append(n)
+    if not required_norm:
+        return True
+
+    # Some results (notably YT videos) embed artists in the title instead of
+    # the artist field, so the candidate title counts as a fallback.
+    haystacks = [_basic_norm(a) for a in candidate.artists] + [_basic_norm(candidate.title)]
+    haystacks = [h for h in haystacks if h]
+    return all(
+        any(fuzz.partial_ratio(artist, h) / 100 >= REQUIRED_FIELD_THRESHOLD for h in haystacks)
+        for artist in required_norm
+    )
+
+
 def score_candidate(track: Track, candidate: Candidate) -> float:
     title_score = fuzz.token_sort_ratio(normalize(track.title), normalize(candidate.title)) / 100
 
@@ -123,6 +175,7 @@ def score_candidate(track: Track, candidate: Candidate) -> float:
 
 
 def best_match(track: Track, candidates: list[Candidate]) -> Optional[Candidate]:
+    candidates = [c for c in candidates if has_title_and_artists(track, c)]
     if not candidates:
         return None
     scored = [(score_candidate(track, c), c) for c in candidates]

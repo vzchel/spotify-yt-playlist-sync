@@ -1,9 +1,6 @@
-# Spotify Youtube Playlist Sync
+# Spotify <-> Youtube Playlist Sync
 
-Convert a playlist between Spotify and YouTube Music, in either direction. For each
-track it searches the destination service, scores candidates by title/artist match,
-prefers **audio-only tracks over music videos**, and prefers the **explicit version**
-of a song when one is available.
+Convert a playlist between Spotify and YouTube Music
 
 ## 1. Install dependencies
 
@@ -90,14 +87,14 @@ Playlist URLs or bare IDs both work for `--playlist`.
 
 For each source track, the destination service is searched and every candidate is scored:
 
-- Fuzzy title and artist similarity (`rapidfuzz`), after stripping noise like
-  `(feat. ...)`, `(Remastered ...)`, `(Live)`, etc.
+- Fuzzy title and artist similarity (`rapidfuzz`), after stripping noise
 - Duration closeness (bonus if within a few seconds, penalty if very different).
 - **Audio-only preference**: YouTube Music searches use `filter="songs"` to restrict
   results to catalog audio tracks; any result that's still a music video is penalized
   in scoring so an audio-only match wins whenever one exists.
 - **Explicit preference**: candidates flagged explicit get a small score bonus, so an
   explicit version is chosen over a clean one when both are close matches.
+- **Original-only**: No Radio Edits, Live Versions, Remastered, etc
 
 The top-scoring candidate is used if it clears a minimum similarity threshold; otherwise
 the track is left unmatched and logged to `unmatched_tracks.csv` at the end of the run.

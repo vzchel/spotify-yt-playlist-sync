@@ -32,35 +32,16 @@ pip install -r requirements.txt
 2. Open DevTools (F12) -> **Network** tab, filter for `browse`.
 3. Click any sidebar item (e.g. "Library") to trigger a request, click the `browse` request,
    and copy the **request headers**.
+4. Right click and Copy -> Copy as fetch (node.js)
 4. In this project folder, run:
 
 ```
-ytmusicapi browser
+python fetchtobrowser.py
 ```
 
-   and paste the headers when prompted. This creates `browser.json`, which `ytmusic_client.py`
+   and paste the 'Copy as fetch (node.js)' when prompted. This creates `browser.json`, which `ytmusic_client.py`
    picks up automatically.
 
-Full walkthrough: https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html
-
-### Option B — OAuth
-
-1. In [Google Cloud Console](https://console.cloud.google.com/), create a project and enable the
-   **YouTube Data API v3**.
-2. Create OAuth client credentials of type **TVs and Limited Input devices**.
-3. Run:
-
-```
-ytmusicapi oauth --client-id YOUR_CLIENT_ID --client-secret YOUR_CLIENT_SECRET
-```
-
-   and follow the prompts. This creates `oauth.json`, which takes priority over `browser.json`
-   if both exist.
-
-Full walkthrough: https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html
-
-> Google has occasionally restricted this OAuth flow for third-party tools; if it stops
-> working, switch to Option A.
 
 ## 4. Run it
 

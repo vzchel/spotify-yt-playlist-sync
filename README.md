@@ -69,6 +69,22 @@ to sync multiple playlists in one run:
 python sync.py --to ytmusic --playlist <url1> <url2> <url3>
 ```
 
+### Syncing into playlists you already have
+
+By default the first run creates a new destination playlist. To sync into an existing
+one instead, copy `template_sync_state.json` to `sync_state.json` and fill in the IDs:
+the Spotify playlist ID is the part of the URL after `/playlist/` (before any `?`), and
+the YouTube Music playlist ID is the `list=` value in its URL. Then, if the destination
+playlist already contains the songs, run once with `--baseline`:
+
+```
+python sync.py --to ytmusic --playlist <spotify_url> --baseline
+```
+
+This records every current source track as already synced without adding anything, so
+the next real run only picks up songs added since. Skip `--baseline` if the destination
+playlist is empty and you want everything copied in.
+
 Runs are incremental: `sync_state.json` records the playlist created on the destination
 and which source tracks are already in it, so re-running the same conversion adds only
 new tracks to the existing playlist instead of creating a duplicate. Delete the entry

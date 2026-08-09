@@ -1,0 +1,10 @@
+{
+  "spotify:SPOTIFY_PLAYLIST_ID:ytmusic": {
+    "destination_playlist_id": "YTMUSIC_PLAYLIST_ID",
+    "synced_track_ids": []
+  },
+  "spotify:ANOTHER_SPOTIFY_PLAYLIST_ID:ytmusic": {
+    "destination_playlist_id": "ANOTHER_YTMUSIC_PLAYLIST_ID",
+    "synced_track_ids": []
+  }
+}

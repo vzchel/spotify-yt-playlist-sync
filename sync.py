@@ -29,14 +29,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--playlist", required=True, nargs="+", help="One or more source playlist URLs or IDs.")
     parser.add_argument("--name", default=None, help="Name for the new playlist (defaults to the source playlist's name; only valid with a single --playlist).")
     parser.add_argument("--dry-run", action="store_true", help="Match tracks but don't create or modify any playlist.")
+    parser.add_argument("--baseline", action="store_true", help="Don't add anything; record all current source tracks as already synced. Use once after pointing sync_state.json at an existing destination playlist that already contains the songs.")
     args = parser.parse_args()
     if args.name and len(args.playlist) > 1:
         parser.error("--name only makes sense with a single --playlist")
+    if args.baseline and args.dry_run:
+        parser.error("--baseline and --dry-run are mutually exclusive")
     return args
 
 
 def sync_playlist(sp, yt, source: str, destination: str, playlist_ref: str,
-                  name: Optional[str], dry_run: bool) -> list[tuple[str, Track]]:
+                  name: Optional[str], dry_run: bool, baseline: bool) -> list[tuple[str, Track]]:
     """Syncs one playlist to the destination service.
 
     Returns the unmatched tracks as (playlist_name, track) pairs for the report.
@@ -59,6 +62,19 @@ def sync_playlist(sp, yt, source: str, destination: str, playlist_ref: str,
     state = sync_state.load()
     state_key = sync_state.key(source, playlist_id, destination)
     entry = state.get(state_key)
+
+    if baseline:
+        if not entry or not entry.get("destination_playlist_id"):
+            raise ValueError(
+                f"--baseline needs an entry '{state_key}' in {sync_state.STATE_FILE} with "
+                f"destination_playlist_id set (see template_sync_state.json)."
+            )
+        entry["synced_track_ids"] = sorted({t.source_id for t in tracks if t.source_id})
+        state[state_key] = entry
+        sync_state.save(state)
+        print(f"Baseline: recorded {len(entry['synced_track_ids'])} tracks as already synced "
+              f"to {entry['destination_playlist_id']}; nothing was added.")
+        return []
 
     dest_playlist_id: Optional[str] = entry["destination_playlist_id"] if entry else None
     if dest_playlist_id and not dry_run:
@@ -158,7 +174,7 @@ def main() -> None:
     for playlist_ref in args.playlist:
         try:
             all_unmatched.extend(
-                sync_playlist(sp, yt, source, destination, playlist_ref, args.name, args.dry_run)
+                sync_playlist(sp, yt, source, destination, playlist_ref, args.name, args.dry_run, args.baseline)
             )
         except Exception as exc:
             failures.append(playlist_ref)

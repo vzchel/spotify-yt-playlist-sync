@@ -10,18 +10,15 @@ from ytmusicapi.exceptions import YTMusicServerError
 
 from matcher import Candidate, Track, is_original
 
-OAUTH_FILE = "./auth/oauth.json"
 BROWSER_FILE = "./auth/browser.json"
 
 
 def get_client() -> YTMusic:
-    if os.path.exists(OAUTH_FILE):
-        return YTMusic(OAUTH_FILE)
     if os.path.exists(BROWSER_FILE):
         return YTMusic(BROWSER_FILE)
     raise FileNotFoundError(
-        f"No YouTube Music credentials found. Run 'ytmusicapi oauth' or 'ytmusicapi browser' "
-        f"to create {OAUTH_FILE} or {BROWSER_FILE} (see README.md)."
+        f"No YouTube Music credentials found. Run 'ytmusicapi browser' "
+        f"to create {BROWSER_FILE} (see README.md)."
     )
 
 

@@ -62,7 +62,18 @@ Other flags:
 - `--name "Custom Name"` — name the new playlist (defaults to the source playlist's name).
 - `--dry-run` — match tracks and print/save the report, but don't create or modify any playlist.
 
-Playlist URLs or bare IDs both work for `--playlist`.
+Playlist URLs or bare IDs both work for `--playlist`, and you can pass several at once
+to sync multiple playlists in one run:
+
+```
+python sync.py --to ytmusic --playlist <url1> <url2> <url3>
+```
+
+Runs are incremental: `sync_state.json` records the playlist created on the destination
+and which source tracks are already in it, so re-running the same conversion adds only
+new tracks to the existing playlist instead of creating a duplicate. Delete the entry
+from `sync_state.json` (or the whole file) to start fresh. Unmatched tracks are retried
+on every run.
 
 ## How it works
 

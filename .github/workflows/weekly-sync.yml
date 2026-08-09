@@ -1,0 +1,54 @@
+name: Weekly playlist sync
+
+on:
+  schedule:
+    - cron: "0 12 * * 0" 
+  workflow_dispatch: 
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Write auth files from secrets
+        env:
+          SPOTIFY_COOKIES_JSON: ${{ secrets.SPOTIFY_COOKIES_JSON }}
+          YTMUSIC_BROWSER_JSON: ${{ secrets.YTMUSIC_BROWSER_JSON }}
+        run: |
+          mkdir -p auth
+          printf '%s' "$SPOTIFY_COOKIES_JSON" > auth/spotify_cookies.json
+          printf '%s' "$YTMUSIC_BROWSER_JSON" > auth/browser.json
+
+      - name: Run sync
+        env:
+          PLAYLIST_URLS: ${{ vars.PLAYLIST_URLS }}
+        run: python sync.py --to ytmusic --playlist $PLAYLIST_URLS
+
+      - name: Commit updated sync state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sync_state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update sync state"
+            git pull --rebase origin main
+            git push
+          fi
+
+      - name: Upload unmatched tracks report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unmatched-tracks
+          path: unmatched_tracks.csv
+          if-no-files-found: ignore

@@ -4,7 +4,7 @@ Convert a playlist between Spotify and YouTube Music
 
 ## 0. Fork this repo
 
-Fork the repo for the continuous weekly sync
+Fork the repo for the continuous weekly sync and 'sync_state.json'
 
 ## 1. Install dependencies
 

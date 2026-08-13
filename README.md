@@ -75,7 +75,9 @@ python sync.py --to ytmusic --playlist <url1> <url2> <url3>
 
 ## 5. Sync
 
-For weekly syncs, go to GitHub Settings -> Secrets & Variables -> Secrets -> Paste in `SPOTIFY_COOKIES_JSON` and `YTMUSIC_BROWSER_JSON`
+For weekly syncs, go to GitHub Settings -> Secrets & Variables -> Secrets -> Paste in `SPOTIFY_COOKIES_JSON` and `YTMUSIC_BROWSER_JSON` -> Variables -> `PLAYLIST_URLS`
+
+Then run GitHub Actions
 
 ### Syncing into playlists you already have
 

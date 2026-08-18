@@ -79,6 +79,8 @@ For weekly syncs, go to GitHub Settings -> Secrets & Variables -> Secrets -> Pas
 
 Then run GitHub Actions
 
+Note: You may have to update the YouTube Music Browser Cookies Weekly if they expire
+
 ### Syncing into playlists you already have
 
 By default the first run creates a new destination playlist. To sync into an existing
